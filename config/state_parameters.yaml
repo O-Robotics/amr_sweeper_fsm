@@ -1,0 +1,104 @@
+###############################################################################
+# AMR Sweeper FSM - State Parameters
+#
+# Purpose
+#   - Defines FSM-supervisor topics and publish rate 
+#   - Defines FSM-state *fault handling* 
+#   - Defines FSM-state profile file 
+###############################################################################
+
+/**/supervisor:
+  ros__parameters:
+    publish:
+      rules:
+        - "topic=fsm_state;type=amr_sweeper_fsm/msg/FSMState;period_ms=1000;source=state"
+        - "topic=fsm_status;type=amr_sweeper_fsm/msg/FSMStatus;period_ms=1000;source=status"
+
+
+#################################### INITIALIZING ####################################
+/**/initializing_state:
+  ros__parameters:
+
+    # FSM-state faults evaluated continuously while the FSM-state is active.
+    faults:
+      fault_priority: 250
+      fault_force: true
+      rosout_triggers:
+        - "level>=FATAL;action=FAULT"
+        - "node=initializing_state;level>=ERROR;action=FAULT"
+
+    # Valid profile range: 000 - 099
+    profiles:
+      default_profile_id: 000
+      file: "config/profiles/initializing_profiles.yaml"
+
+
+###################################### IDLING ########################################
+/**/idling_state:
+  ros__parameters:
+
+    # FSM-state faults evaluated continuously while the FSM-state is active.
+    faults:
+      fault_priority: 250
+      fault_force: true
+      rosout_triggers:
+        - "level>=FATAL;action=FAULT"
+        - "node=idling_state;level>=ERROR;action=FAULT"
+
+    # Valid profile range: 100 - 199
+    profiles:
+      default_profile_id: 100
+      file: "config/profiles/idling_profiles.yaml"
+
+
+##################################### RUNNING ########################################
+/**/running_state:
+  ros__parameters:
+
+    # FSM-state faults evaluated continuously while the FSM-state is active.
+    faults:
+      fault_priority: 250
+      fault_force: true
+      rosout_triggers:
+        - "level>=FATAL;action=FAULT"
+        - "node=running_state;level>=ERROR;action=FAULT"
+
+    # Valid profile range: 200 - 299
+    profiles:
+      default_profile_id: 200
+      file: "config/profiles/running_profiles.yaml"
+
+
+##################################### CHARGING #######################################
+/**/charging_state:
+  ros__parameters:
+
+    # FSM-state faults evaluated continuously while the FSM-state is active.
+    faults:
+      fault_priority: 250
+      fault_force: true
+      rosout_triggers:
+        - "level>=FATAL;action=FAULT"
+        - "node=charging_state;level>=ERROR;action=FAULT"
+
+    # Valid profile range: 300 - 399
+    profiles:
+      default_profile_id: 300
+      file: "config/profiles/charging_profiles.yaml"
+
+
+###################################### FAULT #########################################
+/**/fault_state:
+  ros__parameters:
+
+    # FSM-state faults evaluated continuously while the FSM-state is active.
+    faults:
+      fault_priority: 250
+      fault_force: true
+      rosout_triggers:
+        - "level>=FATAL;action=FAULT"
+
+    # Valid profile range: 400 - 499
+    profiles:
+      default_profile_id: 400
+      file: "config/profiles/fault_profiles.yaml"

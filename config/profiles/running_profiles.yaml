@@ -1,0 +1,212 @@
+###############################################################################
+# RUNNING - Profiles
+#
+# Valid profile range: 200 - 299
+###############################################################################
+
+profiles:
+  # ---------------------------------------------------------------------------
+  # Profile 200 (FSM tester) 
+  # ---------------------------------------------------------------------------
+  - profile:
+      id: 200
+      transitions:
+        auto_transition_on: false
+        auto_transition_profile: 
+        fault_transition_on: true
+        fault_transition_profile: 400
+
+      processes: 
+         # Logic block: FSM tester node (critical)
+        - name: "fsm_tester"
+          importance: "critical"
+          startup:
+            exec: "/home/ros2_ws/install/amr_sweeper_fsm/lib/amr_sweeper_fsm/fsm_tester_node"
+            args:
+              - "--ros-args"
+              - "-r __ns:=/amr_sweeper"
+            ready:
+              - type: "topic"
+                target: "/amr_sweeper/fsm_tester"
+                required: true
+              - type: "service"
+                target: "/amr_sweeper/fsm_tester_node/apply_parameters"
+                required: true
+            window_ms: 5000
+          rosout_triggers:
+            - "node=fsm_tester_node;level>=ERROR;action=FAULT"
+            - "node=fsm_tester_node_node;level>=WARN;action=DEGRADED"
+          errors:
+            on_readiness_fail: "FAULT"
+            on_unexpected_exit: "FAULT"
+            priority: 250
+            force: true
+          restart:
+            max_restarts: 5
+            restart_delay_ms: 1000
+          shutdown:
+            sigint_timeout_ms: 1000
+            sigterm_timeout_ms: 1000
+            sigkill_timeout_ms: 1000
+
+
+  # ---------------------------------------------------------------------------
+  # Profile 201 (default)
+  # ---------------------------------------------------------------------------
+  - profile:
+      id: 201
+      transitions:
+        auto_transition_on: false
+        auto_transition_profile: 
+        fault_transition_on: true
+        fault_transition_profile: 400
+
+      processes: 
+       # Logic block: System_Info node (critical)
+        - name: "system_info"
+          importance: "critical"
+          startup:
+            exec: "/home/ros2_ws/install/system_info/lib/system_info/system_info_node"
+            args:
+              - "--ros-args"
+              - "-r __ns:=/amr_sweeper"
+            ready:
+              - type: "topic"
+                target: "/amr_sweeper/system_info"
+                required: true
+            window_ms: 5000
+          rosout_triggers:
+            - "node=system_info_node;level>=ERROR;action=FAULT"
+            - "node=system_info_node;level>=WARN;action=DEGRADED"
+            - "node=system_info_node;match=Could not open file;action=FAULT" 
+          errors:
+            on_readiness_fail: "FAULT"
+            on_unexpected_exit: "FAULT"
+            priority: 250
+            force: true
+          restart:
+            max_restarts: 5
+            restart_delay_ms: 1000
+          shutdown:
+            sigint_timeout_ms: 1000
+            sigterm_timeout_ms: 1000
+            sigkill_timeout_ms: 1000
+
+        # Logic block: battery node (critical)
+        - name: "amr_sweeper_battery"
+          importance: "critical"
+          startup:
+            exec: "/home/ros2_ws/install/amr_sweeper_battery/lib/amr_sweeper_battery/amr_sweeper_battery_node"
+            args:
+              - "--ros-args"
+              - "-r __ns:=/amr_sweeper"
+            ready:
+              - type: "service"
+                target: "/amr_sweeper/amr_sweeper_battery/get_parameters"
+                required: true
+            window_ms: 5000
+          rosout_triggers:
+            - "node=amr_sweeper_battery;level>=ERROR;action=FAULT"
+            - "node=amr_sweeper_battery;level>=WARN;action=DEGRADED"
+          errors:
+            on_readiness_fail: "FAULT"
+            on_unexpected_exit: "FAULT"
+            priority: 250
+            force: true
+          restart:
+            restart_policy: "never"
+            max_restarts: 0
+            restart_delay_ms: 1000
+          shutdown:
+            sigint_timeout_ms: 1000
+            sigterm_timeout_ms: 1000
+            sigkill_timeout_ms: 1000
+
+        # Logic block: twist mux (critical)
+        - name: "twist_mux"
+          importance: "critical"
+          startup:
+            exec: "/opt/ros/humble/bin/ros2"
+            args:
+              - "launch amr_sweeper_twist_mux twist_mux.launch.py"
+              - "namespace:=amr_sweeper"
+            ready:
+              - type: "topic"
+                target: "/amr_sweeper/cmd_vel"
+                required: true
+            window_ms: 8000
+          rosout_triggers:
+            - "level>=FATAL;action=FAULT"
+            - "level>=ERROR;action=FAULT"
+          errors:
+            on_readiness_fail: "FAULT"
+            on_unexpected_exit: "FAULT"
+            priority: 250
+            force: true
+          restart:
+            max_restarts: 0
+            restart_delay_ms: 1000
+          shutdown:
+            sigint_timeout_ms: 1500
+            sigterm_timeout_ms: 1500
+            sigkill_timeout_ms: 1500
+
+        # Logic block: localization (degraded)
+        - name: "localization"
+          importance: "degraded"
+          startup:
+            exec: "/opt/ros/humble/bin/ros2"
+            args:
+              - "launch amr_sweeper_localization dual_ekf_navsat.launch.py"
+              - "namespace:=amr_sweeper"
+            ready:
+              - type: "topic"
+                target: "/amr_sweeper/odometry/filtered"
+                required: true
+            window_ms: 15000
+          rosout_triggers:
+            - "level>=FATAL;action=FAULT"
+            - "level>=ERROR;action=FAULT"
+          errors:
+            on_readiness_fail: "FAULT"
+            on_unexpected_exit: "DEGRADED"
+            priority: 230
+            force: false
+          restart:
+            max_restarts: 5
+            restart_delay_ms: 1000
+          shutdown:
+            sigint_timeout_ms: 2000
+            sigterm_timeout_ms: 2000
+            sigkill_timeout_ms: 2000
+
+        # Logic block: joystick (optional)
+        - name: "joystick"
+          importance: "optional"
+          startup:
+            exec: "/opt/ros/humble/bin/ros2"
+            args:
+              - "launch amr_sweeper_joystick joystick.launch.py"
+              - "namespace:=amr_sweeper"
+            ready:
+              - type: "topic"
+                target: "/amr_sweeper/joy"
+                required: false
+            window_ms: 8000
+          rosout_triggers:
+            - "level>=FATAL;action=FAULT"
+            - "level>=ERROR;action=DEGRADED"
+          errors:
+            on_readiness_fail: "DEGRADED"
+            on_unexpected_exit: "DEGRADED"
+            priority: 200
+            force: false
+          restart:
+            max_restarts: 5
+            restart_delay_ms: 1000
+          shutdown:
+            sigint_timeout_ms: 1500
+            sigterm_timeout_ms: 1500
+            sigkill_timeout_ms: 1500
+
+ 

@@ -1,8 +1,0 @@
-#Request
-uint8 target_state
----
-#Response
-bool success
-string message
-uint8 current_state
-
