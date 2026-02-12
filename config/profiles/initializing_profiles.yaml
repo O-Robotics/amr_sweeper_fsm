@@ -23,7 +23,7 @@ profiles:
         - name: "fsm_tester"
           importance: "critical"
           startup:
-            exec: "/home/ros2_ws/install/amr_sweeper_fsm/lib/amr_sweeper_fsm/fsm_tester_node"
+            exec: "/home/dev/rob_ws/install/amr_sweeper_fsm/lib/amr_sweeper_fsm/fsm_tester_node"
             args:
               - "--ros-args -r __ns:=/amr_sweeper"
             ready:
@@ -67,7 +67,7 @@ profiles:
         - name: "system_info"
           importance: "critical"
           startup:
-            exec: "/home/ros2_ws/install/system_info/lib/system_info/system_info_node"
+            exec: "/home/dev/rob_ws/install/system_info/lib/system_info/system_info_node"
             args:
               - "--ros-args"
               - "-r __ns:=/amr_sweeper"
@@ -97,7 +97,7 @@ profiles:
         - name: "amr_sweeper_battery"
           importance: "critical"
           startup:
-            exec: "/home/ros2_ws/install/amr_sweeper_battery/lib/amr_sweeper_battery/amr_sweeper_battery_node"
+            exec: "/home/dev/rob_ws/install/amr_sweeper_battery/lib/amr_sweeper_battery/amr_sweeper_battery_node"
             args:
               - "--ros-args"
               - "-r __ns:=/amr_sweeper"
